@@ -1,0 +1,8 @@
+/home/tcontreras/Development/Odyssey/CopperHats/CopperSimulation/build/CMakeFiles/install/local.dir
+/home/tcontreras/Development/Odyssey/CopperHats/CopperSimulation/build/CMakeFiles/install/strip.dir
+/home/tcontreras/Development/Odyssey/CopperHats/CopperSimulation/build/CMakeFiles/B1.dir
+/home/tcontreras/Development/Odyssey/CopperHats/CopperSimulation/build/CMakeFiles/install.dir
+/home/tcontreras/Development/Odyssey/CopperHats/CopperSimulation/build/CMakeFiles/exampleB1.dir
+/home/tcontreras/Development/Odyssey/CopperHats/CopperSimulation/build/CMakeFiles/rebuild_cache.dir
+/home/tcontreras/Development/Odyssey/CopperHats/CopperSimulation/build/CMakeFiles/edit_cache.dir
+/home/tcontreras/Development/Odyssey/CopperHats/CopperSimulation/build/CMakeFiles/list_install_components.dir

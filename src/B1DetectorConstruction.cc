@@ -45,6 +45,7 @@
 #include "G4UnionSolid.hh"
 #include "G4VSolid.hh"
 #include "G4SubtractionSolid.hh"
+#include <math.h>
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -66,12 +67,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 {  
   // Get nist material manager
   G4NistManager* nist = G4NistManager::Instance();
-  
-  // Envelope parameters
-  //
-  G4double env_sizeXY = 150.*cm, env_sizeZ = 300.*cm;
-  G4Material* env_mat = nist->FindOrBuildMaterial("G4_AIR");
-   
+     
   // Option to switch on/off checking of volumes overlaps
   //
   G4bool checkOverlaps = true;
@@ -79,13 +75,13 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
   //     
   // World
   //
-  G4double world_sizeXY = 1.2*env_sizeXY;
-  G4double world_sizeZ  = 1.2*env_sizeZ;
+  G4double world_sizeXY = 150.*cm;
+  G4double world_sizeZ  = 150.*cm;
   G4Material* world_mat = nist->FindOrBuildMaterial("G4_AIR");
   
   G4Box* solidWorld =    
     new G4Box("World",                       //its name
-       0.5*world_sizeXY, 0.5*world_sizeXY, 0.5*world_sizeZ);     //its size
+       world_sizeXY, world_sizeXY, world_sizeZ);     //its size
       
   G4LogicalVolume* logicWorld =                         
     new G4LogicalVolume(solidWorld,          //its solid
@@ -101,31 +97,11 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
                       false,                 //no boolean operation
                       0,                     //copy number
                       checkOverlaps);        //overlaps checking
-  /*
+  
   //     
-  // Envelope
-  //  
-  G4Box* solidEnv =    
-    new G4Box("Envelope",                    //its name
-        0.5*env_sizeXY, 0.5*env_sizeXY, 0.5*env_sizeZ); //its size
-      
-  G4LogicalVolume* logicEnv =                         
-    new G4LogicalVolume(solidEnv,            //its solid
-                        env_mat,             //its material
-                        "Envelope");         //its name
-               
-  new G4PVPlacement(0,                       //no rotation
-                    G4ThreeVector(),         //at (0,0,0)
-                    logicEnv,                //its logical volume
-                    "Envelope",              //its name
-                    logicWorld,              //its mother  volume
-                    false,                   //no boolean operation
-                    0,                       //copy number
-                    checkOverlaps);          //overlaps checking
- 
-  //     
-  // Shape 1: Xenon Chamber
+  // Xenon Chamber
   //
+  
   // Making Xe 136 isotope
   G4double atomic_weight = 131.293*g/mole;
   G4double density = 0.08856*g/cm3;
@@ -138,133 +114,164 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
   enrichedXe->AddIsotope(isoXe136, 100*perCent);
 
   // Now make chamber
-  G4Material* shape1_mat = new G4Material("shape1_mat", density, 1);
-  shape1_mat->AddElement(enrichedXe, 1);
+  G4Material* XeChamber_mat = new G4Material("XeChamber_mat", density, 1);
+  XeChamber_mat->AddElement(enrichedXe, 1);
   
-  //G4Material* shape1_mat = nist->FindOrBuildMaterial("G4_Xe");
+  //G4Material* XeChamber_mat = nist->FindOrBuildMaterial("G4_Xe");
 
-  G4ThreeVector pos1 = G4ThreeVector(0, 0, 0); // at center of envelope
+  G4ThreeVector posXeChamber = G4ThreeVector(0, 0, 0); // at center of world
 
-  G4double shape1_pRmin = 0.*cm, shape1_pRmax = 68.*cm;
-  G4double shape1_pSPhi = 0.*deg, shape1_pDPhi = 360.*deg;
-  G4double shape1_pDz = 52.5*cm;
-  G4Tubs* solidShape1 =
-    new G4Tubs("Shape1",
-  		 shape1_pRmin, shape1_pRmax, shape1_pDz, shape1_pSPhi,
- 		 shape1_pDPhi);
+  G4double XeChamber_pRmin = 0.*cm, XeChamber_pRmax = 53.5*cm;
+  G4double XeChamber_pSPhi = 0.*deg, XeChamber_pDPhi = 360.*deg;
+  G4double XeChamber_pDz = 52.5*cm;
+  G4Tubs* solidXeChamber =
+    new G4Tubs("XeChamber",
+  		 XeChamber_pRmin, XeChamber_pRmax, XeChamber_pDz, XeChamber_pSPhi,
+ 		 XeChamber_pDPhi);
 
                       
-  G4LogicalVolume* logicShape1 =                         
-    new G4LogicalVolume(solidShape1,         //its solid
-                        shape1_mat,          //its material
-                        "Shape1");           //its name
+  G4LogicalVolume* logicXeChamber =                         
+    new G4LogicalVolume(solidXeChamber,         //its solid
+                        XeChamber_mat,          //its material
+                        "XeChamber");           //its name
                
   new G4PVPlacement(0,                       //no rotation
-                    pos1,                    //at position
-                    logicShape1,             //its logical volume
-                    "Shape1",                //its name
-                    logicEnv,                //its mother  volume
+                    G4ThreeVector(),                    //at position
+                    logicXeChamber,             //its logical volume
+                    "XeChamber",                //its name
+                    logicWorld,                //its mother  volume
                     false,                   //no boolean operation
                     0,                       //copy number
                     checkOverlaps);          //overlaps checking
 
 
-  */
+  
   //     
-  // Shape 3: forward end cap
+  // forward end cap
   //
+ 
+  G4double base_pRmax = XeChamber_pRmax;
+  G4double base_pDz = 3.*cm; //52.5*cm;
+  G4double hole_pRmax = (7.9/2.)*cm;
+  G4Material* env_mat = nist->FindOrBuildMaterial("G4_Cu");
 
+  // Make base to put holes into (holes are for pmts)
+  G4VSolid * solidfinal;
+  G4Tubs* solidbase = new G4Tubs("CopperBase", 0., base_pRmax, base_pDz, 0., 360.*deg);
+  G4Tubs* solidhole = new G4Tubs("Hole", 0., hole_pRmax, base_pDz*2., 0., 360.*deg);
+  solidfinal = solidbase->Clone();
+  delete solidbase;
 
-  // first make base
-  G4double base_pRmin = 0., base_pRmax = 68.*cm;//shape1_pRmax;
-  G4double base_pSPhi = 0*deg, base_pDPhi = 360*deg;
-  G4double base_pDz = 3.*cm;
-  
-  G4ThreeVector posbase = G4ThreeVector(0, 0, 0);//-(shape1_pDz+base_pDz*2)); 
-     
-  G4Tubs* solidbase = 
-    new G4Tubs("Base",                      //its name
-	       base_pRmin, base_pRmax,
-	       base_pDz, base_pSPhi,
-	       base_pDPhi);   
-  
-  // then make hats to subtract to make base with holes
-  
-  G4double hole_pRmin = 0., hole_pRmax = 17.62*cm;
-  G4double hole_pSPhi = 0*deg, hole_pDPhi = 360*deg;
-  G4double hole_pDz = 6.*cm;
-
-  G4ThreeVector poshole = G4ThreeVector(0,0,0);
-  
-  G4Tubs* solidhole = 
-    new G4Tubs("Hole",                      //its name
-	       hole_pRmin, hole_pRmax,
-	       hole_pDz, hole_pSPhi,
-	       hole_pDPhi);
-
-  G4SubtractionSolid* subtract = new G4SubtractionSolid("Base-Hole", solidbase, solidhole);
-  
-  // then make cans to cover holes
-  /*G4double can_pRmin = 0., can_pRmax = shape1_pRmax;
-  G4double can_pSPhi = 0*deg, can_pDPhi = 360*deg;
+  // Make can that will cover holes
+  G4double can_pRmax = hole_pRmax;
   G4double can_pDz = 3.*cm;
-  
-  G4Material* can_mat = nist->FindOrBuildMaterial("G4_Cu");
-  G4ThreeVector poscan = G4ThreeVector(0, 0, -(shape1_pDz+base_pDz*2)); // FIXME
-     
   G4Tubs* solidcan = 
-    new G4Tubs("Can",                      //its name
-	       base_pRmin, base_pRmax,
-	       base_pDz, base_pSPhi,
-	       base_pDPhi);  
-  */
-
-  // then combine
-  G4double endcap_pDz = 6.*cm;
-  G4ThreeVector posEndCap = G4ThreeVector(0, 0, 0); //-(shape1_pDz+endcap_pDz));
-  G4Material* endcap_mat = nist->FindOrBuildMaterial("G4_Cu");
+    new G4Tubs("solidcan",                      //its name
+	       0, can_pRmax,
+	       can_pDz, 0,
+	       360.*deg);  
   
-  //G4VSolid* CopperEndCap = new G4UnionSolid("CopperEndCap", solidbase, solidcan);
+  // Loop to make hexagonal rings
+  // r is defined as length from center of hexagon to a corner
+  double nmax = 1.; // number of cans/holes on each side
+  for (G4double r=(hole_pRmax*2+1*cm); r<(base_pRmax - hole_pRmax*2);r+=hole_pRmax*3.){
 
-  G4LogicalVolume* logicCopperEndCap =
-    new G4LogicalVolume(subtract,
-			endcap_mat,
-			"logicCopperEndCap");
-  new G4PVPlacement(0,
-		    posEndCap,
-		    logicCopperEndCap,
-		    "ShapeCopperEndCap",
-		    logicWorld,
-		    false,
-		    0,
-		    checkOverlaps);
-  /*
+    double dx=0,dy=0,x=0,y=0; 
+    double phi = 360*deg/(nmax*6); // angle between each can/hole in current ring
+
+    // loop over each side of the hexagon, each have diff equations to place cans 
+    for (int side=1;side<7;side++){
+
+      // starting at corner at y=0, then moving counter clockwise around hexagon
+      // with x,y initiated as position of corner
+      if (side==1){
+	x = r;
+	y = 0;
+	dy = (r*tan(phi)/(1 + (1/sqrt(3))*tan(phi)));
+	dx = -(1/sqrt(3))*dy;
+      }
+      if (side==2){
+	x = r/2.;
+	y = sqrt(3)*r/2.;
+	dy = 0;
+	dx = (-(4/3)*r*tan(phi)/(1 + (1/sqrt(3))*tan(phi))); 
+      }
+      if (side==3){
+	x = -r/2.;
+	y = sqrt(3)*r/2;
+	dy = (-r*tan(phi)/(1 + (1/sqrt(3))*tan(phi)));
+	dx = (1/sqrt(3))*dy;
+      }
+      if (side==4){
+	x = -r;
+	y = 0;
+	dy = (-r*tan(phi)/(1 + (1/sqrt(3))*tan(phi)));
+	dx = -(1/sqrt(3))*dy;
+      }
+      if (side==5){
+	x = -r/2.;
+	y = -sqrt(3)*r/2.;
+	dx = ((4/3)*r*tan(phi)/(1 + (1/sqrt(3))*tan(phi)));
+	dy = 0;
+      }
+      if (side==6){
+	x = r/2.;
+	y = -sqrt(3)*r/2.;
+	dy = (r*tan(phi)/(1 + (1/sqrt(3))*tan(phi)));
+	dx = (1/sqrt(3))*dy;
+      }
+
+      // Loop over each hole/can to place on this side of this hexagon
+      for (int n=1;n<=nmax;n++){
+	
+	// Position holes in copper	
+	G4ThreeVector poshole = G4ThreeVector(x, y, 0);
+	solidfinal = new G4SubtractionSolid("solidfinal",solidfinal, solidhole, 0, poshole);
+
+	// Place cans ontop of holes
+	G4ThreeVector poscan = G4ThreeVector(x, y, -(base_pDz+can_pDz));
+	//G4LogicalVolume* logiccan = new G4LogicalVolume(solidcan, can_mat, "logiccan");
+	//new G4PVPlacement(0, poscan, logiccan, "Can", logicWorld, false, 0, true); 
+	solidfinal = new G4UnionSolid("solidfinal", solidfinal, solidcan, 0, poscan);
+	x += dx;
+	y += dy;
+      }
+    }
+    nmax += 1.; // each side has one more can/hole when moving out in radius
+  }
+
+  // Place Holey Base
+  G4LogicalVolume* logicCopperEndcap = new G4LogicalVolume(solidfinal, env_mat, "logicCopperEndcap");  
+  new G4PVPlacement(0, G4ThreeVector(0, 0, -(XeChamber_pDz+base_pDz)), logicCopperEndcap, "CopperEndcap", logicWorld, false, 0, true);
+      
+
+  
   //     
-  // Shape 4: (not forward?) endcap
+  // Back endcap
   //
-  G4double shape4_pRmin = 0., shape4_pRmax = shape1_pRmax;
-  G4double shape4_pSPhi = 0*deg, shape4_pDPhi = 360*deg;
-  G4double shape4_pDz = 6.*cm;
+  G4double BackEndcap_pRmin = 0., BackEndcap_pRmax = XeChamber_pRmax;
+  G4double BackEndcap_pSPhi = 0*deg, BackEndcap_pDPhi = 360*deg;
+  G4double BackEndcap_pDz = 6.*cm;
   
-  G4Material* shape4_mat = nist->FindOrBuildMaterial("G4_Cu");
-  G4ThreeVector pos4 = G4ThreeVector(0, 0, shape1_pDz+shape4_pDz);
+  G4Material* BackEndcap_mat = nist->FindOrBuildMaterial("G4_Cu");
+  G4ThreeVector pos4 = G4ThreeVector(0, 0, XeChamber_pDz+BackEndcap_pDz);
      
-  G4Tubs* solidShape4 = 
-    new G4Tubs("Shape4",                      //its name
-	       shape4_pRmin, shape4_pRmax,
-	       shape4_pDz, shape4_pSPhi,
-	       shape4_pDPhi);
+  G4Tubs* solidBackEndcap = 
+    new G4Tubs("BackEndcap",                      //its name
+	       BackEndcap_pRmin, BackEndcap_pRmax,
+	       BackEndcap_pDz, BackEndcap_pSPhi,
+	       BackEndcap_pDPhi);
                 
-  G4LogicalVolume* logicShape4 =                         
-    new G4LogicalVolume(solidShape4,         //its solid
-                        shape4_mat,          //its material
-                        "Shape4");           //its name
+  G4LogicalVolume* logicBackEndcap =                         
+    new G4LogicalVolume(solidBackEndcap,         //its solid
+                        BackEndcap_mat,          //its material
+                        "BackEndcap");           //its name
                
   new G4PVPlacement(0,                       //no rotation
                     pos4,                    //at position
-                    logicShape4,             //its logical volume
-                    "Shape4",                //its name
-                    logicEnv,                //its mother  volume
+                    logicBackEndcap,             //its logical volume
+                    "BackEndcap",                //its name
+                    logicWorld,                //its mother  volume
                     false,                   //no boolean operation
                     0,                       //copy number
                     checkOverlaps);          //overlaps checking
@@ -275,25 +282,25 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
   //
   // Plastic barrel
   //
-  G4double shape6_pRmin = shape1_pRmax, shape6_pRmax = shape1_pRmax+2.5*cm;
-  G4double shape6_pDz = shape1_pDz;
-  G4double shape6_pSPhi = 0*deg, shape6_pDPhi = 360*deg;
+  G4double PlasticBarrel_pRmin = XeChamber_pRmax, PlasticBarrel_pRmax = XeChamber_pRmax+2.5*cm;
+  G4double PlasticBarrel_pDz = XeChamber_pDz;
+  G4double PlasticBarrel_pSPhi = 0*deg, PlasticBarrel_pDPhi = 360*deg;
   
-  G4Material* shape6_mat = nist->FindOrBuildMaterial("G4_POLYETHYLENE");
+  G4Material* PlasticBarrel_mat = nist->FindOrBuildMaterial("G4_POLYETHYLENE");
   G4ThreeVector pos6 = G4ThreeVector(0,0,0);
 
-  G4Tubs* solidShape6 = new G4Tubs("Shape6", shape6_pRmin, shape6_pRmax, shape6_pDz, shape6_pSPhi, shape6_pDPhi);
+  G4Tubs* solidPlasticBarrel = new G4Tubs("PlasticBarrel", PlasticBarrel_pRmin, PlasticBarrel_pRmax, PlasticBarrel_pDz, PlasticBarrel_pSPhi, PlasticBarrel_pDPhi);
 
-  G4LogicalVolume* logicShape6 =                         
-    new G4LogicalVolume(solidShape6,         //its solid
-                        shape6_mat,          //its material
-                        "Shape6");           //its name
+  G4LogicalVolume* logicPlasticBarrel =                         
+    new G4LogicalVolume(solidPlasticBarrel,         //its solid
+                        PlasticBarrel_mat,          //its material
+                        "PlasticBarrel");           //its name
                
   new G4PVPlacement(0,                       //no rotation
                     pos6,                    //at position
-                    logicShape6,             //its logical volume
-                    "Shape6",                //its name
-                    logicEnv,                //its mother  volume
+                    logicPlasticBarrel,             //its logical volume
+                    "PlasticBarrel",                //its name
+                    logicWorld,                //its mother  volume
                     false,                   //no boolean operation
                     0,                       //copy number
                     checkOverlaps);          //overlaps checking
@@ -301,48 +308,48 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
   //
   // Copper barrel
   //
-  G4double shape5_pRmin = shape6_pRmax, shape5_pRmax = shape6_pRmax+2.5*cm;
-  G4double shape5_pDz = shape1_pDz;
-  G4double shape5_pSPhi = 0*deg, shape5_pDPhi = 360*deg;
+  G4double CopperBarrel_pRmin = PlasticBarrel_pRmax, CopperBarrel_pRmax = PlasticBarrel_pRmax+2.5*cm;
+  G4double CopperBarrel_pDz = XeChamber_pDz;
+  G4double CopperBarrel_pSPhi = 0*deg, CopperBarrel_pDPhi = 360*deg;
   
-  G4Material* shape5_mat = nist->FindOrBuildMaterial("G4_Cu");
+  G4Material* CopperBarrel_mat = nist->FindOrBuildMaterial("G4_Cu");
   G4ThreeVector pos5 = G4ThreeVector(0,0,0);
 
-  G4Tubs* solidShape5 = new G4Tubs("Shape5", shape5_pRmin, shape5_pRmax, shape5_pDz, shape5_pSPhi, shape5_pDPhi);
+  G4Tubs* solidCopperBarrel = new G4Tubs("CopperBarrel", CopperBarrel_pRmin, CopperBarrel_pRmax, CopperBarrel_pDz, CopperBarrel_pSPhi, CopperBarrel_pDPhi);
 
-  G4LogicalVolume* logicShape5 =                         
-    new G4LogicalVolume(solidShape5,         //its solid
-                        shape5_mat,          //its material
-                        "Shape5");           //its name
+  G4LogicalVolume* logicCopperBarrel =                         
+    new G4LogicalVolume(solidCopperBarrel,         //its solid
+                        CopperBarrel_mat,          //its material
+                        "CopperBarrel");           //its name
                
   new G4PVPlacement(0,                       //no rotation
                     pos5,                    //at position
-                    logicShape5,             //its logical volume
-                    "Shape5",                //its name
-                    logicEnv,                //its mother  volume
+                    logicCopperBarrel,             //its logical volume
+                    "CopperBarrel",                //its name
+                    logicWorld,                //its mother  volume
                     false,                   //no boolean operation
                     0,                       //copy number
                     checkOverlaps);          //overlaps checking
+
   
+  ///
+  // Set vis attributes like color
+  ///
+  logicWorld->SetVisAttributes(G4VisAttributes::Invisible);  
+  G4VisAttributes* tmpVisAtt = new G4VisAttributes(G4Colour(0,0.5,1.));
+  tmpVisAtt->SetForceSolid(true); // force the object to be visualized with a surface
+  tmpVisAtt->SetForceAuxEdgeVisible(true); // force auxiliary edges to be shown
+  logicCopperEndcap->SetVisAttributes(tmpVisAtt);
+  logicBackEndcap->SetVisAttributes(tmpVisAtt);
+  logicCopperBarrel->SetVisAttributes(tmpVisAtt);
+  //logiccan->SetVisAttributes(tmpVisAtt);
+
   
-  // Color shapes for easier viewing
-  //G4VisAttributes *Red = new G4VisAttributes( G4Colour(255/255., 0/255., 0/255.));
-  G4VisAttributes *Yellow = new G4VisAttributes(G4Colour(255/255., 255/255., 0/255., .98));
-  G4VisAttributes *LightBlue = new G4VisAttributes(G4Colour(0/255.,204/255.,204/255., .1));
-  G4VisAttributes *Grey = new G4VisAttributes(G4Colour(153/255., 153./255, 153/255., .1));
-  
-  logicShape1->SetVisAttributes(LightBlue);
-  //logicShape2->SetVisAttributes(Yellow);
-  //logicShape3->SetVisAttributes(Yellow);
-  logicCopperEndCap->SetVisAttributes(Yellow);
-  logicShape4->SetVisAttributes(Grey);
-  logicShape5->SetVisAttributes(Grey);
-  logicShape6->SetVisAttributes(Grey);
-  */
-  // Set Shape1 as scoring volume
   //
-  fScoringVolume = logicCopperEndCap; //logicShape1;
-  fCopper = logicCopperEndCap;
+  // Set scoring volumes
+  //
+  fScoringVolume = logicXeChamber;
+  fCopper = logicCopperEndcap;
   fWorld = logicWorld;
   //
   //always return the physical World
