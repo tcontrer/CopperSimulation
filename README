@@ -4,30 +4,23 @@
      Geant4 - an Object-Oriented Toolkit for Simulation in HEP
      =========================================================
 
-                            Example B1
-                            -----------
+                            Copper Simulation
+                            -----------------
 
- This example demonstrates a very simple application where an energy
- deposit is accounted in user actions and their associated objects
- and a dose in a selected volume is calculated. 
+ This simulation is edited from the geant4 example B1. This simulation tests
+ the sensitivity of the geometry for the copper shielding of the NEXT detector,
+ a neutrinoless double beta decay experiment. 
 
 	
  1- GEOMETRY DEFINITION
 	
    The geometry is constructed in the B1DetectorConstruction class.
-   The setup consists of a an envelope of box shape containing two
-   volumes: a spherical cone and a trapezoid.
-
-   In this example we use  some common materials materials for medical
-   applications. The envelope is made of water and the two inner volumes
-   are made from tissue and bone materials.  
-   The materials are created with the help of the G4NistManager class,
-   which allows to build a material from the NIST database using their
-   names. All available materials can be found in the Geant4 User's Guide
-   for Application Developers, Appendix 10: Geant4 Materials Database.
+   The setup consists of a the world, a chamber of xenon gas, a
+   plastice barrel, and copper shileding including the forward
+   endcap, backward endcap and barrel.
 		
  2- PHYSICS LIST
- 
+
    The particle's type and the physic processes which will be available
    in this example are set in the QBBC physics list. This physics list 
    requires data files for electromagnetic and hadronic processes.
@@ -59,19 +52,20 @@
    which is invoked only in multi-threading mode.
   	 
  4- PRIMARY GENERATOR
-  
-   The primary generator is defined in the B1PrimaryGeneratorAction class.
-   The default kinematics is a 6 MeV gamma, randomly distributed in front
-   of the envelope across 80% of the transverse (X,Y) envelope size. 
-   This default setting can be changed via the Geant4 built-in commands 
-   of the G4ParticleGun class.
-     
+
+    THe primary generator is defined in the B1PrimaryGeneratorAction class.
+    This simulation uses the G4ParticleGun to shoot photons at 2.6 MeV toward
+    the copper foward endcap in all directions. This is the energy is the
+    energy of the dominant background for the detector thus for this
+    simulation it is sufficient to have only this.
+       
  5- DETECTOR RESPONSE
 
-   This example demonstrates a simple scoring implemented directly
-   in the user action classes.  Alternative ways of scoring via Geant4 classes 
-   can be found in the other examples.
-   
+   This example has three scoring volumes that collect the erngy deposited in each.
+   These volumes are the xenon chamber, the copper foward endcap, and the world.
+   The copper endcap and world scoring volumes are used as a check, we primarily
+   are interested in the energy depositied in the xenon chamber.
+
    The energy deposited is collected step by step for a selected volume
    in B1SteppingAction and accumulated event by event in B1EventAction.
 
