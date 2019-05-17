@@ -289,12 +289,12 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 
 	// Place cans ontop of holes
 	// make new can for each position
-	G4ThreeVector poscan = G4ThreeVector(x, y, -(XeChamber_pDz+base_pDz+can_pDz*2));
-	G4LogicalVolume* logiccan = new G4LogicalVolume(solidcan, shielding_mat, "logiccan");
-	new G4PVPlacement(0, poscan, logiccan, "Can", logicWorld, false, 0, true);
+	//G4ThreeVector poscan = G4ThreeVector(x, y, -(XeChamber_pDz+base_pDz+can_pDz*2));
+	//G4LogicalVolume* logiccan = new G4LogicalVolume(solidcan, shielding_mat, "logiccan");
+	//new G4PVPlacement(0, poscan, logiccan, "Can", logicWorld, false, 0, true);
 	// or union with base to make one solid
-	//G4ThreeVector poscan = G4ThreeVector(x, y, -(base_pDz+can_pDz));
-	//solidfinal = new G4UnionSolid("solidfinal", solidfinal, solidcan, 0, poscan);
+	G4ThreeVector poscan = G4ThreeVector(x, y, -(base_pDz+can_pDz));
+	solidfinal = new G4UnionSolid("solidfinal", solidfinal, solidcan, 0, poscan);
 
 	x += dx;
 	y += dy;
