@@ -121,9 +121,9 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 
   G4ThreeVector posXeChamber = G4ThreeVector(0, 0, 0); // at center of world
 
-  G4double XeChamber_pRmin = 0.*cm, XeChamber_pRmax = 53.5*cm;
+  G4double XeChamber_pRmin = 0.*cm, XeChamber_pRmax = 51.5*cm;
   G4double XeChamber_pSPhi = 0.*deg, XeChamber_pDPhi = 360.*deg;
-  G4double XeChamber_pDz = 52.5*cm;
+  G4double XeChamber_pDz = 68*cm;
   G4Tubs* solidXeChamber =
     new G4Tubs("XeChamber",
   		 XeChamber_pRmin, XeChamber_pRmax, XeChamber_pDz, XeChamber_pSPhi,
@@ -145,15 +145,69 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
                     checkOverlaps);          //overlaps checking
 
 
+
+
+
+  //
+  // Plastic barrel
+  //
+  G4double PlasticBarrel_pRmin = XeChamber_pRmax, PlasticBarrel_pRmax = XeChamber_pRmax+2*cm;
+  G4double PlasticBarrel_pDz = XeChamber_pDz;
+  G4double PlasticBarrel_pSPhi = 0*deg, PlasticBarrel_pDPhi = 360*deg;
+  
+  G4Material* PlasticBarrel_mat = nist->FindOrBuildMaterial("G4_POLYETHYLENE");
+  G4ThreeVector pos6 = G4ThreeVector(0,0,0);
+
+  G4Tubs* solidPlasticBarrel = new G4Tubs("PlasticBarrel", PlasticBarrel_pRmin, PlasticBarrel_pRmax, PlasticBarrel_pDz, PlasticBarrel_pSPhi, PlasticBarrel_pDPhi);
+
+  G4LogicalVolume* logicPlasticBarrel =                         
+    new G4LogicalVolume(solidPlasticBarrel,         //its solid
+                        PlasticBarrel_mat,          //its material
+                        "PlasticBarrel");           //its name
+               
+  new G4PVPlacement(0,                       //no rotation
+                    pos6,                    //at position
+                    logicPlasticBarrel,             //its logical volume
+                    "PlasticBarrel",                //its name
+                    logicWorld,                //its mother  volume
+                    false,                   //no boolean operation
+                    0,                       //copy number
+                    checkOverlaps);          //overlaps checking
+
+  //
+  // Copper barrel
+  //
+  G4double CopperBarrel_pRmin = PlasticBarrel_pRmax, CopperBarrel_pRmax = PlasticBarrel_pRmax+12.*cm;
+  G4double CopperBarrel_pDz = XeChamber_pDz;
+  G4double CopperBarrel_pSPhi = 0*deg, CopperBarrel_pDPhi = 360*deg;
+
+  G4Material* shielding_mat = nist->FindOrBuildMaterial("G4_Cu");
+  G4ThreeVector pos5 = G4ThreeVector(0,0,0);
+
+  G4Tubs* solidCopperBarrel = new G4Tubs("CopperBarrel", CopperBarrel_pRmin, CopperBarrel_pRmax, CopperBarrel_pDz, CopperBarrel_pSPhi, CopperBarrel_pDPhi);
+
+  G4LogicalVolume* logicCopperBarrel =                         
+    new G4LogicalVolume(solidCopperBarrel,         //its solid
+                        shielding_mat,          //its material
+                        "CopperBarrel");           //its name
+               
+  new G4PVPlacement(0,                       //no rotation
+                    pos5,                    //at position
+                    logicCopperBarrel,             //its logical volume
+                    "CopperBarrel",                //its name
+                    logicWorld,                //its mother  volume
+                    false,                   //no boolean operation
+                    0,                       //copy number
+                    checkOverlaps);          //overlaps checking
+
   
   //     
   // forward end cap
   //
  
-  G4double base_pRmax = XeChamber_pRmax;
+  G4double base_pRmax = CopperBarrel_pRmax;
   G4double base_pDz = 3.*cm; //52.5*cm;
   G4double hole_pRmax = (7.9/2.)*cm;
-  G4Material* env_mat = nist->FindOrBuildMaterial("G4_Cu");
 
   // Make base to put holes into (holes are for pmts)
   G4VSolid * solidfinal;
@@ -169,13 +223,18 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
     new G4Tubs("solidcan",                      //its name
 	       0, can_pRmax,
 	       can_pDz, 0,
-	       360.*deg);  
+	       360.*deg);
   
   // Loop to make hexagonal rings
   // r is defined as length from center of hexagon to a corner
   double nmax = 1.; // number of cans/holes on each side
-  for (G4double r=(hole_pRmax*2+1*cm); r<(base_pRmax - hole_pRmax*2);r+=hole_pRmax*3.){
-
+  double nrings = 4.;
+  double rmin = hole_pRmax*2. + 1.*cm;
+  double rmax = base_pRmax - hole_pRmax*2.5;
+  double rspacing = rmax/nrings; //hole_pRmax*3.5;
+  double r = rmin;
+  for (int ring=1; ring<=nrings;ring++){
+    
     double dx=0,dy=0,x=0,y=0; 
     double phi = 360*deg/(nmax*6); // angle between each can/hole in current ring
 
@@ -198,7 +257,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
       }
       if (side==3){
 	x = -r/2.;
-	y = sqrt(3)*r/2;
+	y = sqrt(3)*r/2.;
 	dy = (-r*tan(phi)/(1 + (1/sqrt(3))*tan(phi)));
 	dx = (1/sqrt(3))*dy;
       }
@@ -229,19 +288,24 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 	solidfinal = new G4SubtractionSolid("solidfinal",solidfinal, solidhole, 0, poshole);
 
 	// Place cans ontop of holes
-	G4ThreeVector poscan = G4ThreeVector(x, y, -(base_pDz+can_pDz));
-	//G4LogicalVolume* logiccan = new G4LogicalVolume(solidcan, can_mat, "logiccan");
-	//new G4PVPlacement(0, poscan, logiccan, "Can", logicWorld, false, 0, true); 
-	solidfinal = new G4UnionSolid("solidfinal", solidfinal, solidcan, 0, poscan);
+	// make new can for each position
+	G4ThreeVector poscan = G4ThreeVector(x, y, -(XeChamber_pDz+base_pDz+can_pDz*2));
+	G4LogicalVolume* logiccan = new G4LogicalVolume(solidcan, shielding_mat, "logiccan");
+	new G4PVPlacement(0, poscan, logiccan, "Can", logicWorld, false, 0, true);
+	// or union with base to make one solid
+	//G4ThreeVector poscan = G4ThreeVector(x, y, -(base_pDz+can_pDz));
+	//solidfinal = new G4UnionSolid("solidfinal", solidfinal, solidcan, 0, poscan);
+
 	x += dx;
 	y += dy;
       }
     }
     nmax += 1.; // each side has one more can/hole when moving out in radius
+    r += rspacing;
   }
 
   // Place Holey Base
-  G4LogicalVolume* logicCopperEndcap = new G4LogicalVolume(solidfinal, env_mat, "logicCopperEndcap");  
+  G4LogicalVolume* logicCopperEndcap = new G4LogicalVolume(solidfinal, shielding_mat, "logicCopperEndcap");  
   new G4PVPlacement(0, G4ThreeVector(0, 0, -(XeChamber_pDz+base_pDz)), logicCopperEndcap, "CopperEndcap", logicWorld, false, 0, true);
       
 
@@ -249,11 +313,9 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
   //     
   // Back endcap
   //
-  G4double BackEndcap_pRmin = 0., BackEndcap_pRmax = XeChamber_pRmax;
+  G4double BackEndcap_pRmin = 0., BackEndcap_pRmax = CopperBarrel_pRmax;
   G4double BackEndcap_pSPhi = 0*deg, BackEndcap_pDPhi = 360*deg;
   G4double BackEndcap_pDz = 6.*cm;
-  
-  G4Material* BackEndcap_mat = nist->FindOrBuildMaterial("G4_Cu");
   G4ThreeVector pos4 = G4ThreeVector(0, 0, XeChamber_pDz+BackEndcap_pDz);
      
   G4Tubs* solidBackEndcap = 
@@ -264,68 +326,13 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
                 
   G4LogicalVolume* logicBackEndcap =                         
     new G4LogicalVolume(solidBackEndcap,         //its solid
-                        BackEndcap_mat,          //its material
+                        shielding_mat,          //its material
                         "BackEndcap");           //its name
                
   new G4PVPlacement(0,                       //no rotation
                     pos4,                    //at position
                     logicBackEndcap,             //its logical volume
                     "BackEndcap",                //its name
-                    logicWorld,                //its mother  volume
-                    false,                   //no boolean operation
-                    0,                       //copy number
-                    checkOverlaps);          //overlaps checking
-
-
-
-
-  //
-  // Plastic barrel
-  //
-  G4double PlasticBarrel_pRmin = XeChamber_pRmax, PlasticBarrel_pRmax = XeChamber_pRmax+2.5*cm;
-  G4double PlasticBarrel_pDz = XeChamber_pDz;
-  G4double PlasticBarrel_pSPhi = 0*deg, PlasticBarrel_pDPhi = 360*deg;
-  
-  G4Material* PlasticBarrel_mat = nist->FindOrBuildMaterial("G4_POLYETHYLENE");
-  G4ThreeVector pos6 = G4ThreeVector(0,0,0);
-
-  G4Tubs* solidPlasticBarrel = new G4Tubs("PlasticBarrel", PlasticBarrel_pRmin, PlasticBarrel_pRmax, PlasticBarrel_pDz, PlasticBarrel_pSPhi, PlasticBarrel_pDPhi);
-
-  G4LogicalVolume* logicPlasticBarrel =                         
-    new G4LogicalVolume(solidPlasticBarrel,         //its solid
-                        PlasticBarrel_mat,          //its material
-                        "PlasticBarrel");           //its name
-               
-  new G4PVPlacement(0,                       //no rotation
-                    pos6,                    //at position
-                    logicPlasticBarrel,             //its logical volume
-                    "PlasticBarrel",                //its name
-                    logicWorld,                //its mother  volume
-                    false,                   //no boolean operation
-                    0,                       //copy number
-                    checkOverlaps);          //overlaps checking
-
-  //
-  // Copper barrel
-  //
-  G4double CopperBarrel_pRmin = PlasticBarrel_pRmax, CopperBarrel_pRmax = PlasticBarrel_pRmax+2.5*cm;
-  G4double CopperBarrel_pDz = XeChamber_pDz;
-  G4double CopperBarrel_pSPhi = 0*deg, CopperBarrel_pDPhi = 360*deg;
-  
-  G4Material* CopperBarrel_mat = nist->FindOrBuildMaterial("G4_Cu");
-  G4ThreeVector pos5 = G4ThreeVector(0,0,0);
-
-  G4Tubs* solidCopperBarrel = new G4Tubs("CopperBarrel", CopperBarrel_pRmin, CopperBarrel_pRmax, CopperBarrel_pDz, CopperBarrel_pSPhi, CopperBarrel_pDPhi);
-
-  G4LogicalVolume* logicCopperBarrel =                         
-    new G4LogicalVolume(solidCopperBarrel,         //its solid
-                        CopperBarrel_mat,          //its material
-                        "CopperBarrel");           //its name
-               
-  new G4PVPlacement(0,                       //no rotation
-                    pos5,                    //at position
-                    logicCopperBarrel,             //its logical volume
-                    "CopperBarrel",                //its name
                     logicWorld,                //its mother  volume
                     false,                   //no boolean operation
                     0,                       //copy number
