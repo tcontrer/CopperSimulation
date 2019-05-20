@@ -236,7 +236,6 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
   for (int ring=1; ring<=nrings;ring++){
     
     double dx=0,dy=0,x=0,y=0; 
-    double phi = 360*deg/(nmax*6); // angle between each can/hole in current ring
 
     // loop over each side of the hexagon, each have diff equations to place cans 
     for (int side=1;side<7;side++){
@@ -246,38 +245,38 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
       if (side==1){
 	x = r;
 	y = 0;
-	dy = (r*tan(phi)/(1 + (1/sqrt(3))*tan(phi)));
-	dx = -(1/sqrt(3))*dy;
+	dx = -r/(2*nmax);
+	dy = -sqrt(3)*dx;
       }
       if (side==2){
 	x = r/2.;
 	y = sqrt(3)*r/2.;
+	dx = -r/nmax;
 	dy = 0;
-	dx = (-(4/3)*r*tan(phi)/(1 + (1/sqrt(3))*tan(phi))); 
       }
       if (side==3){
 	x = -r/2.;
 	y = sqrt(3)*r/2.;
-	dy = (-r*tan(phi)/(1 + (1/sqrt(3))*tan(phi)));
-	dx = (1/sqrt(3))*dy;
+	dx = -r/(2.*nmax);
+	dy = sqrt(3)*dx;
       }
       if (side==4){
 	x = -r;
 	y = 0;
-	dy = (-r*tan(phi)/(1 + (1/sqrt(3))*tan(phi)));
-	dx = -(1/sqrt(3))*dy;
+	dx = r/(2.*nmax);
+	dy = -sqrt(3)*dx;
       }
       if (side==5){
 	x = -r/2.;
 	y = -sqrt(3)*r/2.;
-	dx = ((4/3)*r*tan(phi)/(1 + (1/sqrt(3))*tan(phi)));
+	dx = r/nmax;
 	dy = 0;
       }
       if (side==6){
 	x = r/2.;
 	y = -sqrt(3)*r/2.;
-	dy = (r*tan(phi)/(1 + (1/sqrt(3))*tan(phi)));
-	dx = (1/sqrt(3))*dy;
+	dx = r/(2.*nmax);
+	dy = sqrt(3)*dx;
       }
 
       // Loop over each hole/can to place on this side of this hexagon
@@ -292,6 +291,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 	//G4ThreeVector poscan = G4ThreeVector(x, y, -(XeChamber_pDz+base_pDz+can_pDz*2));
 	//G4LogicalVolume* logiccan = new G4LogicalVolume(solidcan, shielding_mat, "logiccan");
 	//new G4PVPlacement(0, poscan, logiccan, "Can", logicWorld, false, 0, true);
+	
 	// or union with base to make one solid
 	G4ThreeVector poscan = G4ThreeVector(x, y, -(base_pDz+can_pDz));
 	solidfinal = new G4UnionSolid("solidfinal", solidfinal, solidcan, 0, poscan);
