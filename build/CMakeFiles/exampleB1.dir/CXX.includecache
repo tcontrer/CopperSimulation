@@ -20,6 +20,12 @@ G4VUserDetectorConstruction.hh
 globals.hh
 ../include/globals.hh
 
+../include/B1DetectorConstruction_steps.hh
+G4VUserDetectorConstruction.hh
+../include/G4VUserDetectorConstruction.hh
+globals.hh
+../include/globals.hh
+
 ../include/B1EventAction.hh
 B1AnalysisManager.hh
 ../include/B1AnalysisManager.hh
@@ -187,6 +193,8 @@ B1PrimaryGeneratorAction.hh
 /home/tcontreras/Development/Odyssey/CopperHats/CopperSimulation/src/B1PrimaryGeneratorAction.hh
 B1DetectorConstruction.hh
 /home/tcontreras/Development/Odyssey/CopperHats/CopperSimulation/src/B1DetectorConstruction.hh
+B1DetectorConstruction_steps.hh
+/home/tcontreras/Development/Odyssey/CopperHats/CopperSimulation/src/B1DetectorConstruction_steps.hh
 B1AnalysisManager.hh
 /home/tcontreras/Development/Odyssey/CopperHats/CopperSimulation/src/B1AnalysisManager.hh
 G4RunManager.hh

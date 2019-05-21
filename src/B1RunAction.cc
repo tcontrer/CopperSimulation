@@ -30,6 +30,7 @@
 #include "B1RunAction.hh"
 #include "B1PrimaryGeneratorAction.hh"
 #include "B1DetectorConstruction.hh"
+#include "B1DetectorConstruction_steps.hh"
 #include "B1AnalysisManager.hh"
 //#include "B1Analysis.hh"
 // #include "B1Run.hh"
@@ -47,15 +48,15 @@ using namespace std;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-B1RunAction::B1RunAction(B1AnalysisManager* ana)
+B1RunAction::B1RunAction(B1AnalysisManager* ana, int argc, char** argv)
 : G4UserRunAction(),
   fEdep(0.),
   fEdep2(0.),
   fEdepe(0.),
   fEdepc(0.),
   fEdepw(0.),
-  //fargc(argc),
-  //fargv(argv),
+  fargc(argc),
+  fargv(argv),
   fAnalysisManager(ana)
 { 
   // add new units for dose
@@ -78,44 +79,6 @@ B1RunAction::B1RunAction(B1AnalysisManager* ana)
   accumulableManager->RegisterAccumulable(fEdepc);
   accumulableManager->RegisterAccumulable(fEdepw);
 
-  // Create analysis manager                                                                    
-  // The choice of analysis technology is done via selectin of a namespace                      
-  // in B4Analysis.hh                                                                           
-  //auto analysisManager = G4AnalysisManager::Instance();
-  //G4cout << "Using " << analysisManager->GetType() << G4endl;
-
-  // Create directories                                                                         
-  //analysisManager->SetHistoDirectoryName("histograms");                                       
-  //analysisManager->SetNtupleDirectoryName("ntuple");
-  /*
-  analysisManager->SetVerboseLevel(1);
-  analysisManager->SetNtupleMerging(true);
-    // Note: merging ntuples is available only with Root output                                 
-  
-  // Book histograms, ntuple                                                                    
-  //                                                                                            
-
-  // Creating histograms                                                                        
-  analysisManager->CreateH1("Edep","Edep in Xe", 200, 0., 200*MeV);
-  analysisManager->CreateH1("xinit", "xinit", 150., -150., 150.*cm);
-  analysisManager->CreateH1("yinit", "yinit", 150., -150., 150.*cm);
-  analysisManager->CreateH1("zinit", "zinit", 150., -150., 150.*cm);
-  analysisManager->CreateH1("xfin", "xfin", 150., -150., 150.*cm);
-  analysisManager->CreateH1("yfin", "yfin", 150., -150., 150.*cm);
-  analysisManager->CreateH1("zfin", "zfin", 150., -150., 150.*cm);
-  // Creating ntuple                                                                            
-  //
-  analysisManager->CreateNtuple("B1", "Info");
-  analysisManager->CreateNtupleDColumn("Edep");
-  analysisManager->CreateNtupleDColumn("xinit");
-  analysisManager->CreateNtupleDColumn("yinit");
-  analysisManager->CreateNtupleDColumn("xinit");
-  analysisManager->CreateNtupleDColumn("xfin");
-  analysisManager->CreateNtupleDColumn("yfin");
-  analysisManager->CreateNtupleDColumn("zfin");
-  analysisManager->FinishNtuple();
-  */
-
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -132,32 +95,8 @@ void B1RunAction::BeginOfRunAction(const G4Run*)
   // inform the runManager to save random number seed
   //G4RunManager::GetRunManager()->SetRandomNumberStore(false);
 
-  // Get analysis manager                                                                       
-  //auto analysisManager = G4AnalysisManager::Instance();
+  // Get analysis manager
   fAnalysisManager->Book();
-
-  
-  // reset accumulables to their initial values
-  //G4AccumulableManager* accumulableManager = G4AccumulableManager::Instance();
-  //accumulableManager->Reset();
-
-  // Open an output file                                                                        
-  //
-  /*
-  G4String fileName = "B1";
-  
-  if (fargc>=2){
-   G4String sub = "_";  
-   fileName.append(sub);
-    
-    for (int i=2; i<fargc; i++){
-      fileName.append(fargv[i]);
-    }
-
-  }
-
-  analysisManager->OpenFile(fileName);   
- */
 
 }
 
@@ -182,10 +121,15 @@ void B1RunAction::EndOfRunAction(const G4Run* run)
   
   G4double rms = edep2 - edep*edep/nofEvents;
   if (rms > 0.) rms = std::sqrt(rms); else rms = 0.;  
-
-  const B1DetectorConstruction* detectorConstruction
-   = static_cast<const B1DetectorConstruction*>
-     (G4RunManager::GetRunManager()->GetUserDetectorConstruction());
+  
+  //const B1DetectorConstruction_steps* detectorConstruction;
+  //if (fargc > 3 && strcmp(fargv[4],"n")==0){
+  //  const B1DetectorConstruction_steps* detectorConstruction = static_cast<const B1DetectorConstruction_steps*>(G4RunManager::GetRunManager()->GetUserDetectorConstruction());
+  //}
+  //else {
+  const B1DetectorConstruction* detectorConstruction = static_cast<const B1DetectorConstruction*>(G4RunManager::GetRunManager()->GetUserDetectorConstruction());
+    //}
+  
   G4double mass = detectorConstruction->GetScoringVolume()->GetMass();
   G4double dose = edep/mass;
   G4double rmsDose = rms/mass;
@@ -230,10 +174,7 @@ void B1RunAction::EndOfRunAction(const G4Run* run)
      << G4endl
      << G4endl;
 
-  //fAnalysisManager->FillNtupleEdep();
   fAnalysisManager->Save();
-  //analysisManager->Write();
-  //analysisManager->CloseFile();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

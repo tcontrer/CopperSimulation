@@ -1822,6 +1822,7 @@ CMakeFiles/exampleB1.dir/src/B1PrimaryGeneratorAction.cc.o: /home/tcontreras/Dev
 
 CMakeFiles/exampleB1.dir/src/B1RunAction.cc.o: ../include/B1AnalysisManager.hh
 CMakeFiles/exampleB1.dir/src/B1RunAction.cc.o: ../include/B1DetectorConstruction.hh
+CMakeFiles/exampleB1.dir/src/B1RunAction.cc.o: ../include/B1DetectorConstruction_steps.hh
 CMakeFiles/exampleB1.dir/src/B1RunAction.cc.o: ../include/B1PrimaryGeneratorAction.hh
 CMakeFiles/exampleB1.dir/src/B1RunAction.cc.o: ../include/B1RunAction.hh
 CMakeFiles/exampleB1.dir/src/B1RunAction.cc.o: ../src/B1RunAction.cc

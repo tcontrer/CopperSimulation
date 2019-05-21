@@ -24,50 +24,39 @@
 // ********************************************************************
 //
 //
-/// \file B1RunAction.hh
-/// \brief Definition of the B1RunAction class
+/// \file B1DetectorConstruction.hh
+/// \brief Definition of the B1DetectorConstruction class
 
-#ifndef B1RunAction_h
-#define B1RunAction_h 1
+#ifndef B1DetectorConstruction_h
+#define B1DetectorConstruction_h 1
 
-#include "B1AnalysisManager.hh"
-#include "G4UserRunAction.hh"
-#include "G4Accumulable.hh"
+#include "G4VUserDetectorConstruction.hh"
 #include "globals.hh"
 
-class G4Run;
+class G4VPhysicalVolume;
+class G4LogicalVolume;
 
-/// Run action class
-///
-/// In EndOfRunAction(), it calculates the dose in the selected volume 
-/// from the energy deposit accumulated via stepping and event actions.
-/// The computed dose is then printed on the screen.
+/// Detector construction class to define materials and geometry.
 
-class B1RunAction : public G4UserRunAction
+class B1DetectorConstruction : public G4VUserDetectorConstruction
 {
   public:
-  B1RunAction(B1AnalysisManager* ana, int argc, char** argv);
-    virtual ~B1RunAction();
+    B1DetectorConstruction();
+    virtual ~B1DetectorConstruction();
 
-    // virtual G4Run* GenerateRun();
-  virtual void BeginOfRunAction(const G4Run*);
-    virtual void   EndOfRunAction(const G4Run*);
+    virtual G4VPhysicalVolume* Construct();
+    
+    G4LogicalVolume* GetScoringVolume() const { return fScoringVolume; }
+  G4LogicalVolume* GetCopper() const {return fCopper;}
+  G4LogicalVolume* GetWorld() const {return fWorld;}
 
-  void AddEdep (G4double edep); 
-  void AddEdepe (G4double edepe);
-  void AddEdepc (G4double edepc);
-  void AddEdepw (G4double edepw);
-
-  private:
-  G4Accumulable<G4double> fEdep;
-  G4Accumulable<G4double> fEdep2;
-  G4Accumulable<G4double> fEdepe;
-  G4Accumulable<G4double> fEdepc;
-  G4Accumulable<G4double> fEdepw;
-  int fargc;
-  char** fargv;
-  B1AnalysisManager* fAnalysisManager;
+  protected:
+    G4LogicalVolume*  fScoringVolume;
+  G4LogicalVolume* fCopper;
+  G4LogicalVolume* fWorld;
 };
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #endif
 

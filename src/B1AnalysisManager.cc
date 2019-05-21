@@ -79,10 +79,18 @@ void B1AnalysisManager::Book()
   if (fargc>=2){
    G4String sub = "_";
    fileName.append(sub);
+  
+   if (fargc == 3){
+     for (int i=2; i<fargc; i++){
+       fileName.append(fargv[i]);
+     }
+   }
 
-    for (int i=2; i<fargc; i++){
-      fileName.append(fargv[i]);
-    }
+   if (fargc == 4){
+     for (int i=2; i<(fargc-1); i++){
+       fileName.append(fargv[i]);
+     }
+   }
   }
 
   analysisManager->OpenFile(fileName);

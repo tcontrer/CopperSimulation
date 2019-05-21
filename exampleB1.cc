@@ -55,6 +55,11 @@ int main(int argc,char** argv)
     ui = new G4UIExecutive(argc, argv);
   }
 
+  if (argc == 2){
+    ui = new G4UIExecutive(argc, argv);
+    G4cout<<"THERE ARE TWO ARGUMENTS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+  }
+
   // Choose the Random engine
   G4Random::setTheEngine(new CLHEP::RanecuEngine);
   
@@ -84,7 +89,7 @@ int main(int argc,char** argv)
   G4VisManager* visManager = new G4VisExecutive;
   // G4VisExecutive can take a verbosity argument - see /vis/verbose guidance.
   // G4VisManager* visManager = new G4VisExecutive("Quiet");
-  visManager->RegisterGraphicsSystem(new G4RayTracer);
+  //visManager->RegisterGraphicsSystem(new G4RayTracer);
   visManager->Initialize();
 
   // Get the pointer to the User Interface manager

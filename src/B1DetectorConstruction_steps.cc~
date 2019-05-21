@@ -27,7 +27,7 @@
 /// \file B1DetectorConstruction.cc
 /// \brief Implementation of the B1DetectorConstruction class
 
-#include "B1DetectorConstruction.hh"
+#include "B1DetectorConstruction_steps.hh"
 
 #include "G4RunManager.hh"
 #include "G4NistManager.hh"
@@ -49,7 +49,7 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-B1DetectorConstruction::B1DetectorConstruction()
+B1DetectorConstruction_steps::B1DetectorConstruction_steps()
 : G4VUserDetectorConstruction(),
   fScoringVolume(0),
   fCopper(0),
@@ -58,12 +58,12 @@ B1DetectorConstruction::B1DetectorConstruction()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-B1DetectorConstruction::~B1DetectorConstruction()
+B1DetectorConstruction_steps::~B1DetectorConstruction_steps()
 { }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-G4VPhysicalVolume* B1DetectorConstruction::Construct()
+G4VPhysicalVolume* B1DetectorConstruction_steps::Construct()
 {  
   // Get nist material manager
   G4NistManager* nist = G4NistManager::Instance();
@@ -206,7 +206,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
   //
  
   G4double base_pRmax = CopperBarrel_pRmax;
-  G4double base_pDz = 6.*cm; //52.5*cm;
+  G4double base_pDz = 3.*cm; //52.5*cm;
   G4double hole_pRmax = (7.9/2.)*cm;
 
   // Make base to put holes into (holes are for pmts)
@@ -215,16 +215,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
   G4Tubs* solidhole = new G4Tubs("Hole", 0., hole_pRmax, base_pDz*2., 0., 360.*deg);
   solidfinal = solidbase->Clone();
   delete solidbase;
-  
-  // Make can that will cover holes
-  G4double can_pRmax = hole_pRmax;
-  G4double can_pDz = 6.*cm;
-  G4Tubs* solidcan = 
-    new G4Tubs("solidcan",                      //its name
-	       0, can_pRmax,
-	       can_pDz, 0,
-	       360.*deg);
-  
+
   // Loop to make hexagonal rings
   // r is defined as length from center of hexagon to a corner
   double nmax = 1.; // number of cans/holes on each side
@@ -233,9 +224,28 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
   double rmax = base_pRmax - hole_pRmax*2.5;
   double rspacing = rmax/nrings; //hole_pRmax*3.5;
   double r = rmin;
+  G4double can_pDz = 3.*cm; // height of cans on inner rings
   for (int ring=1; ring<=nrings;ring++){
+    G4cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"<<"   ring = "<<ring<<"     $$$$$$$$$$$$$$$$$$$$$$$$$$$\n";
+    // cans shrink in height as you go out in rings
+    if (ring == 3){
+      can_pDz = 2.5*cm;
+    }
+    if (ring == 4){
+      can_pDz = 2.*cm;
+    }
+    
+    // Make can that will cover holes
+    G4double can_pRmax = hole_pRmax;
+    G4Tubs* solidcan = 
+      new G4Tubs("solidcan",                      //its name
+	       0, can_pRmax,
+	       can_pDz, 0,
+	       360.*deg);
+  
     
     double dx=0,dy=0,x=0,y=0; 
+    double phi = 360*deg/(nmax*6); // angle between each can/hole in current ring
 
     // loop over each side of the hexagon, each have diff equations to place cans 
     for (int side=1;side<7;side++){
@@ -245,38 +255,38 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
       if (side==1){
 	x = r;
 	y = 0;
-	dx = -r/(2*nmax);
-	dy = -sqrt(3)*dx;
+	dy = (r*tan(phi)/(1 + (1/sqrt(3))*tan(phi)));
+	dx = -(1/sqrt(3))*dy;
       }
       if (side==2){
 	x = r/2.;
 	y = sqrt(3)*r/2.;
-	dx = -r/nmax;
 	dy = 0;
+	dx = (-(4/3)*r*tan(phi)/(1 + (1/sqrt(3))*tan(phi))); 
       }
       if (side==3){
 	x = -r/2.;
 	y = sqrt(3)*r/2.;
-	dx = -r/(2.*nmax);
-	dy = sqrt(3)*dx;
+	dy = (-r*tan(phi)/(1 + (1/sqrt(3))*tan(phi)));
+	dx = (1/sqrt(3))*dy;
       }
       if (side==4){
 	x = -r;
 	y = 0;
-	dx = r/(2.*nmax);
-	dy = -sqrt(3)*dx;
+	dy = (-r*tan(phi)/(1 + (1/sqrt(3))*tan(phi)));
+	dx = -(1/sqrt(3))*dy;
       }
       if (side==5){
 	x = -r/2.;
 	y = -sqrt(3)*r/2.;
-	dx = r/nmax;
+	dx = ((4/3)*r*tan(phi)/(1 + (1/sqrt(3))*tan(phi)));
 	dy = 0;
       }
       if (side==6){
 	x = r/2.;
 	y = -sqrt(3)*r/2.;
-	dx = r/(2.*nmax);
-	dy = sqrt(3)*dx;
+	dy = (r*tan(phi)/(1 + (1/sqrt(3))*tan(phi)));
+	dx = (1/sqrt(3))*dy;
       }
 
       // Loop over each hole/can to place on this side of this hexagon
@@ -288,13 +298,12 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 
 	// Place cans ontop of holes
 	// make new can for each position
-	//G4ThreeVector poscan = G4ThreeVector(x, y, -(XeChamber_pDz+base_pDz+can_pDz*2));
-	//G4LogicalVolume* logiccan = new G4LogicalVolume(solidcan, shielding_mat, "logiccan");
-	//new G4PVPlacement(0, poscan, logiccan, "Can", logicWorld, false, 0, true);
-	
+	G4ThreeVector poscan = G4ThreeVector(x, y, -(XeChamber_pDz+base_pDz+can_pDz*2));
+	G4LogicalVolume* logiccan = new G4LogicalVolume(solidcan, shielding_mat, "logiccan");
+	new G4PVPlacement(0, poscan, logiccan, "Can", logicWorld, false, 0, true);
 	// or union with base to make one solid
-	G4ThreeVector poscan = G4ThreeVector(x, y, -(base_pDz+can_pDz));
-	solidfinal = new G4UnionSolid("solidfinal", solidfinal, solidcan, 0, poscan);
+	//G4ThreeVector poscan = G4ThreeVector(x, y, -(base_pDz+can_pDz));
+	//solidfinal = new G4UnionSolid("solidfinal", solidfinal, solidcan, 0, poscan);
 
 	x += dx;
 	y += dy;
@@ -303,7 +312,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
     nmax += 1.; // each side has one more can/hole when moving out in radius
     r += rspacing;
   }
-  
+
   // Place Holey Base
   G4LogicalVolume* logicCopperEndcap = new G4LogicalVolume(solidfinal, shielding_mat, "logicCopperEndcap");  
   new G4PVPlacement(0, G4ThreeVector(0, 0, -(XeChamber_pDz+base_pDz)), logicCopperEndcap, "CopperEndcap", logicWorld, false, 0, true);
