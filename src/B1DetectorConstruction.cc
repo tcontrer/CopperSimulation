@@ -216,15 +216,6 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
   solidfinal = solidbase->Clone();
   delete solidbase;
   
-  // Make can that will cover holes
-  G4double can_pRmax = hole_pRmax;
-  G4double can_pDz = 6.*cm;
-  G4Tubs* solidcan = 
-    new G4Tubs("solidcan",                      //its name
-	       0, can_pRmax,
-	       can_pDz, 0,
-	       360.*deg);
-  
   // Loop to make hexagonal rings
   // r is defined as length from center of hexagon to a corner
   double nmax = 1.; // number of cans/holes on each side
@@ -234,6 +225,21 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
   double rspacing = rmax/nrings; //hole_pRmax*3.5;
   double r = rmin;
   for (int ring=1; ring<=nrings;ring++){
+
+    // Make can that will cover holes
+    G4double can_pRmax = hole_pRmax;
+    G4double can_pDz = 6.*cm;
+    // Cans are either all flat or get shorter (if input argv[4] = "y")
+    //if (fargc > 3 && strcmp(fargv[5],"y")==0){
+    //  // cans shrink in height as you go out in rings     
+    //  if (ring == 3){
+    //	can_pDz = 2.5*cm;
+    // }
+    // if (ring == 4){
+    //	can_pDz = 2.*cm;
+    //}
+    //}
+    G4Tubs* solidcan = new G4Tubs("solidcan",0, can_pRmax, can_pDz, 0, 360.*deg);
     
     double dx=0,dy=0,x=0,y=0; 
 

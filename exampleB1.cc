@@ -55,10 +55,10 @@ int main(int argc,char** argv)
     ui = new G4UIExecutive(argc, argv);
   }
 
-  if (argc == 2){
-    ui = new G4UIExecutive(argc, argv);
-    G4cout<<"THERE ARE TWO ARGUMENTS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
-  }
+  //if (argc == 2){
+  //  ui = new G4UIExecutive(argc, argv);
+  //  G4cout<<"THERE ARE TWO ARGUMENTS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+  //}
 
   // Choose the Random engine
   G4Random::setTheEngine(new CLHEP::RanecuEngine);

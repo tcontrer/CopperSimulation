@@ -54,7 +54,7 @@ B1ActionInitialization::~B1ActionInitialization()
 void B1ActionInitialization::BuildForMaster() const
 {
   B1AnalysisManager* ana = 0;
-  B1RunAction* runAction = new B1RunAction(ana, fargc, fargv);
+  B1RunAction* runAction = new B1RunAction(ana);
   SetUserAction(runAction);
 }
 
@@ -67,7 +67,7 @@ void B1ActionInitialization::Build() const
   B1PrimaryGeneratorAction* prim = new B1PrimaryGeneratorAction(ana);
   SetUserAction(prim);
 
-  B1RunAction* runAction = new B1RunAction(ana, fargc, fargv);
+  B1RunAction* runAction = new B1RunAction(ana);
   SetUserAction(runAction);
   
   B1EventAction* eventAction = new B1EventAction(runAction, ana);

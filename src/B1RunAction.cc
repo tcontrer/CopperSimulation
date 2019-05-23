@@ -30,7 +30,7 @@
 #include "B1RunAction.hh"
 #include "B1PrimaryGeneratorAction.hh"
 #include "B1DetectorConstruction.hh"
-#include "B1DetectorConstruction_steps.hh"
+//#include "B1DetectorConstruction_steps.hh"
 #include "B1AnalysisManager.hh"
 //#include "B1Analysis.hh"
 // #include "B1Run.hh"
@@ -48,15 +48,13 @@ using namespace std;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-B1RunAction::B1RunAction(B1AnalysisManager* ana, int argc, char** argv)
+B1RunAction::B1RunAction(B1AnalysisManager* ana)
 : G4UserRunAction(),
   fEdep(0.),
   fEdep2(0.),
   fEdepe(0.),
   fEdepc(0.),
   fEdepw(0.),
-  fargc(argc),
-  fargv(argv),
   fAnalysisManager(ana)
 { 
   // add new units for dose
@@ -122,13 +120,13 @@ void B1RunAction::EndOfRunAction(const G4Run* run)
   G4double rms = edep2 - edep*edep/nofEvents;
   if (rms > 0.) rms = std::sqrt(rms); else rms = 0.;  
   
-  //const B1DetectorConstruction_steps* detectorConstruction;
-  //if (fargc > 3 && strcmp(fargv[4],"n")==0){
-  //  const B1DetectorConstruction_steps* detectorConstruction = static_cast<const B1DetectorConstruction_steps*>(G4RunManager::GetRunManager()->GetUserDetectorConstruction());
-  //}
-  //else {
-  const B1DetectorConstruction* detectorConstruction = static_cast<const B1DetectorConstruction*>(G4RunManager::GetRunManager()->GetUserDetectorConstruction());
+  
+    const B1DetectorConstruction* detectorConstruction = static_cast<const B1DetectorConstruction*>(G4RunManager::GetRunManager()->GetUserDetectorConstruction());
+    //if (fargc > 3 && strcmp(fargv[4],"n")==0){
+    //G4cout <<" USING STEP GEOMETRY!!!\n";
+    //const B1DetectorConstruction_steps* detectorConstruction = static_cast<const B1DetectorConstruction_steps*>(G4RunManager::GetRunManager()->GetUserDetectorConstruction());
     //}
+    
   
   G4double mass = detectorConstruction->GetScoringVolume()->GetMass();
   G4double dose = edep/mass;

@@ -46,7 +46,7 @@ class G4Run;
 class B1RunAction : public G4UserRunAction
 {
   public:
-  B1RunAction(B1AnalysisManager* ana, int argc, char** argv);
+  B1RunAction(B1AnalysisManager* ana);
     virtual ~B1RunAction();
 
     // virtual G4Run* GenerateRun();
@@ -64,8 +64,6 @@ class B1RunAction : public G4UserRunAction
   G4Accumulable<G4double> fEdepe;
   G4Accumulable<G4double> fEdepc;
   G4Accumulable<G4double> fEdepw;
-  int fargc;
-  char** fargv;
   B1AnalysisManager* fAnalysisManager;
 };
 
