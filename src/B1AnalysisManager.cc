@@ -100,7 +100,7 @@ void B1AnalysisManager::Book()
   analysisManager->CreateH1("Edep","Edep in Xe", 200, 0., 400*MeV);
   analysisManager->CreateH1("Edepe", "Edepe in Xe", 200, 0, 400*MeV);
   analysisManager->CreateH1("Edepc", "Edep in Copper", 200., 0, 400*MeV);
-  analysisManager->CreateH1("Edepw", "Edep in World", 200., 0, 400*MeV);
+  analysisManager->CreateH1("Edepw", "Edep in Env", 200., 0, 400*MeV);
   analysisManager->CreateH1("xinit", "xinit", 150., -150., 150.*cm);
   analysisManager->CreateH1("yinit", "yinit", 150., -150., 150.*cm);
   analysisManager->CreateH1("zinit", "zinit", 150., -150., 150.*cm);

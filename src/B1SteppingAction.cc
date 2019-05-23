@@ -47,7 +47,7 @@ B1SteppingAction::B1SteppingAction(B1EventAction* eventAction, B1AnalysisManager
   fEventAction(eventAction),
   fScoringVolume(0),
   fCopper(0),
-  fWorld(0),
+  fEnv(0),
   fAnalysisManager(ana)
 {}
 
@@ -68,7 +68,7 @@ void B1SteppingAction::UserSteppingAction(const G4Step* step)
     fScoringVolume = detectorConstruction->GetScoringVolume();   
 
     fCopper = detectorConstruction->GetCopper();
-    fWorld = detectorConstruction->GetWorld();
+    fEnv = detectorConstruction->GetEnv();
   }
 
   // get volume of the current step
@@ -110,7 +110,7 @@ void B1SteppingAction::UserSteppingAction(const G4Step* step)
   
   
   // check if we are in scoring volume
-  if (volume != fScoringVolume && volume != fCopper && volume != fWorld) return;
+  if (volume != fScoringVolume && volume != fCopper && volume != fEnv) return;
 
   // collect energy deposited Xe in this step
   if (volume == fScoringVolume){
@@ -127,7 +127,7 @@ void B1SteppingAction::UserSteppingAction(const G4Step* step)
     fEventAction->AddEdepc(edepStep);
   }
 
-  if (volume == fWorld){
+  if (volume == fEnv){
     G4double edepStep = step->GetTotalEnergyDeposit();
     fEventAction->AddEdepw(edepStep);
   }

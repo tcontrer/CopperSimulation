@@ -53,7 +53,7 @@ B1DetectorConstruction::B1DetectorConstruction()
 : G4VUserDetectorConstruction(),
   fScoringVolume(0),
   fCopper(0),
-  fWorld(0)
+  fEnv(0)
 { }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -97,6 +97,27 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
                       false,                 //no boolean operation
                       0,                     //copy number
                       checkOverlaps);        //overlaps checking
+
+  //                                                                  
+  // Envelope                                                                       
+  //                                                                                  
+  G4Box* solidEnv =
+    new G4Box("Envelope",                    //its name                      
+              0.95*world_sizeXY, 0.95*world_sizeXY, 0.95*world_sizeZ); //its size   
+  
+  G4LogicalVolume* logicEnv =
+    new G4LogicalVolume(solidEnv,            //its solid                                        
+                        world_mat,             //its material                                 
+                        "Envelope");         //its name                                
+  new G4PVPlacement(0,                       //no rotation                                
+                    G4ThreeVector(),         //at (0,0,0)                              
+                    logicEnv,                //its logical volume                    
+                    "Envelope",              //its name                               
+                    logicWorld,              //its mother  volume                     
+                    false,                   //no boolean operation                 
+                    0,                       //copy number                                 
+                    checkOverlaps);          //overlaps checking 
+
   
   //     
   // Xenon Chamber
@@ -139,7 +160,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
                     G4ThreeVector(),                    //at position
                     logicXeChamber,             //its logical volume
                     "XeChamber",                //its name
-                    logicWorld,                //its mother  volume
+                    logicEnv,                //its mother  volume
                     false,                   //no boolean operation
                     0,                       //copy number
                     checkOverlaps);          //overlaps checking
@@ -169,7 +190,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
                     pos6,                    //at position
                     logicPlasticBarrel,             //its logical volume
                     "PlasticBarrel",                //its name
-                    logicWorld,                //its mother  volume
+                    logicEnv,                //its mother  volume
                     false,                   //no boolean operation
                     0,                       //copy number
                     checkOverlaps);          //overlaps checking
@@ -195,7 +216,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
                     pos5,                    //at position
                     logicCopperBarrel,             //its logical volume
                     "CopperBarrel",                //its name
-                    logicWorld,                //its mother  volume
+                    logicEnv,                //its mother  volume
                     false,                   //no boolean operation
                     0,                       //copy number
                     checkOverlaps);          //overlaps checking
@@ -296,7 +317,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 	// make new can for each position
 	//G4ThreeVector poscan = G4ThreeVector(x, y, -(XeChamber_pDz+base_pDz+can_pDz*2));
 	//G4LogicalVolume* logiccan = new G4LogicalVolume(solidcan, shielding_mat, "logiccan");
-	//new G4PVPlacement(0, poscan, logiccan, "Can", logicWorld, false, 0, true);
+	//new G4PVPlacement(0, poscan, logiccan, "Can", logicEnv, false, 0, true);
 	
 	// or union with base to make one solid
 	G4ThreeVector poscan = G4ThreeVector(x, y, -(base_pDz+can_pDz));
@@ -312,7 +333,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
   
   // Place Holey Base
   G4LogicalVolume* logicCopperEndcap = new G4LogicalVolume(solidfinal, shielding_mat, "logicCopperEndcap");  
-  new G4PVPlacement(0, G4ThreeVector(0, 0, -(XeChamber_pDz+base_pDz)), logicCopperEndcap, "CopperEndcap", logicWorld, false, 0, true);
+  new G4PVPlacement(0, G4ThreeVector(0, 0, -(XeChamber_pDz+base_pDz)), logicCopperEndcap, "CopperEndcap", logicEnv, false, 0, true);
       
 
   
@@ -339,7 +360,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
                     pos4,                    //at position
                     logicBackEndcap,             //its logical volume
                     "BackEndcap",                //its name
-                    logicWorld,                //its mother  volume
+                    logicEnv,                //its mother  volume
                     false,                   //no boolean operation
                     0,                       //copy number
                     checkOverlaps);          //overlaps checking
@@ -348,7 +369,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
   ///
   // Set vis attributes like color
   ///
-  logicWorld->SetVisAttributes(G4VisAttributes::Invisible);  
+  logicEnv->SetVisAttributes(G4VisAttributes::Invisible);  
   G4VisAttributes* tmpVisAtt = new G4VisAttributes(G4Colour(0,0.5,1.));
   tmpVisAtt->SetForceSolid(true); // force the object to be visualized with a surface
   tmpVisAtt->SetForceAuxEdgeVisible(true); // force auxiliary edges to be shown
@@ -363,7 +384,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
   //
   fScoringVolume = logicXeChamber;
   fCopper = logicCopperEndcap;
-  fWorld = logicWorld;
+  fEnv = logicEnv;
   //
   //always return the physical World
   //

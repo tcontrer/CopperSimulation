@@ -55,7 +55,7 @@ class B1SteppingAction : public G4UserSteppingAction
     B1EventAction*  fEventAction;
     G4LogicalVolume* fScoringVolume;
   G4LogicalVolume* fCopper;
-  G4LogicalVolume* fWorld;
+  G4LogicalVolume* fEnv;
   B1AnalysisManager* fAnalysisManager;
 };
 

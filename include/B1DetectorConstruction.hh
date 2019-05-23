@@ -48,12 +48,12 @@ class B1DetectorConstruction : public G4VUserDetectorConstruction
   
   G4LogicalVolume* GetScoringVolume() const { return fScoringVolume; }
   G4LogicalVolume* GetCopper() const {return fCopper;}
-  G4LogicalVolume* GetWorld() const {return fWorld;}
+  G4LogicalVolume* GetEnv() const {return fEnv;}
 
 protected:
   G4LogicalVolume*  fScoringVolume;
   G4LogicalVolume* fCopper;
-  G4LogicalVolume* fWorld;
+  G4LogicalVolume* fEnv;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
