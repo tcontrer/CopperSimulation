@@ -48,6 +48,7 @@ B1SteppingAction::B1SteppingAction(B1EventAction* eventAction, B1AnalysisManager
   fScoringVolume(0),
   fCopper(0),
   fEnv(0),
+  fnumf(0),
   fAnalysisManager(ana)
 {}
 
@@ -87,6 +88,8 @@ void B1SteppingAction::UserSteppingAction(const G4Step* step)
   // Get final position
   G4TrackStatus status = track->GetTrackStatus();
   if (status != fAlive){
+    fnumf += 1;
+    G4cout <<"DEAD! "<<fnumf<<"\n";
     
     const G4ThreeVector& pos = track->GetPosition();
     const G4ParticleDefinition* pid = track->GetParticleDefinition();

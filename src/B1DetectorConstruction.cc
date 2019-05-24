@@ -253,20 +253,20 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
     // Cans are either all flat or get shorter (if input argv[4] = "y")
     //if (fargc > 3 && strcmp(fargv[5],"y")==0){
     //  // cans shrink in height as you go out in rings     
-    //  if (ring == 3){
-    //	can_pDz = 2.5*cm;
-    // }
-    // if (ring == 4){
-    //	can_pDz = 2.*cm;
-    //}
+    if (ring == 3){
+      can_pDz = 5*cm;
+    }
+    if (ring == 4){
+      can_pDz = 3.5*cm;
+    }
     //}
     G4Tubs* solidcan = new G4Tubs("solidcan",0, can_pRmax, can_pDz, 0, 360.*deg);
     
     double dx=0,dy=0,x=0,y=0; 
-
+    
     // loop over each side of the hexagon, each have diff equations to place cans 
     for (int side=1;side<7;side++){
-
+      
       // starting at corner at y=0, then moving counter clockwise around hexagon
       // with x,y initiated as position of corner
       if (side==1){

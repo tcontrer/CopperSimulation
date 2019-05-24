@@ -57,6 +57,7 @@ class B1SteppingAction : public G4UserSteppingAction
   G4LogicalVolume* fCopper;
   G4LogicalVolume* fEnv;
   B1AnalysisManager* fAnalysisManager;
+  int fnumf;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

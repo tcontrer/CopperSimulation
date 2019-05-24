@@ -27,4 +27,4 @@
 #/gun/energy 210 MeV
 #/tracking/verbose 2
 #
-/run/beamOn 100
+/run/beamOn 10000

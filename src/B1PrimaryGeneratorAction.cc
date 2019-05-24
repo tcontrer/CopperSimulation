@@ -47,6 +47,7 @@ B1PrimaryGeneratorAction::B1PrimaryGeneratorAction(B1AnalysisManager* ana)
 : G4VUserPrimaryGeneratorAction(),
   fParticleGun(0), 
   fEnvBox(0),
+  fnumi(0),
   fAnalysisManager(ana)
 {
   G4int n_particle = 1;
@@ -133,22 +134,23 @@ void B1PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   G4double y0 = size * envSizeXY * (G4UniformRand()-0.5);
   G4double z0 = -0.5 * envSizeZ;
 
-  // Only keep forward particles (testing)
-  if (uz > 0){
-    fParticleGun->SetParticlePosition(G4ThreeVector(x0,y0,z0));
-    fParticleGun->SetParticleMomentumDirection(G4ThreeVector(ux,uy,uz));
-    fParticleGun->SetParticleEnergy(2.6*MeV);
-    fParticleGun->GeneratePrimaryVertex(anEvent);
-
-    // Save initial position
-
-    fAnalysisManager->FillHisto(4,x0);
-    fAnalysisManager->FillHisto(5, y0);
-    fAnalysisManager->FillHisto(6, z0);
-    fAnalysisManager->Setxinit(x0);
-    fAnalysisManager->Setyinit(y0);
-    fAnalysisManager->Setzinit(z0);
-  }
+  fnumi += 1;
+  G4cout <<"PRIMARY: "<<fnumi<<"\n";
+  
+  fParticleGun->SetParticlePosition(G4ThreeVector(x0,y0,z0));
+  fParticleGun->SetParticleMomentumDirection(G4ThreeVector(ux,uy,uz));
+  fParticleGun->SetParticleEnergy(2.6*MeV);
+  fParticleGun->GeneratePrimaryVertex(anEvent);
+  
+  // Save initial position
+  
+  fAnalysisManager->FillHisto(4,x0);
+  fAnalysisManager->FillHisto(5, y0);
+  fAnalysisManager->FillHisto(6, z0);
+  fAnalysisManager->Setxinit(x0);
+  fAnalysisManager->Setyinit(y0);
+  fAnalysisManager->Setzinit(z0);
+  
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
