@@ -143,7 +143,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
   G4ThreeVector posXeChamber = G4ThreeVector(0, 0, 0); // at center of world
 
   G4double XeChamber_pRmin = 0.*cm, XeChamber_pRmax = 51.5*cm;
-  G4double XeChamber_pSPhi = 0.*deg, XeChamber_pDPhi = 180.*deg;
+  G4double XeChamber_pSPhi = 0.*deg, XeChamber_pDPhi = 360.*deg;
   G4double XeChamber_pDz = 68*cm;
   G4Tubs* solidXeChamber =
     new G4Tubs("XeChamber",
@@ -174,7 +174,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
   //
   G4double PlasticBarrel_pRmin = XeChamber_pRmax, PlasticBarrel_pRmax = XeChamber_pRmax+2*cm;
   G4double PlasticBarrel_pDz = XeChamber_pDz;
-  G4double PlasticBarrel_pSPhi = 0*deg, PlasticBarrel_pDPhi = 180*deg;
+  G4double PlasticBarrel_pSPhi = 0*deg, PlasticBarrel_pDPhi = 295*deg;
   
   G4Material* PlasticBarrel_mat = nist->FindOrBuildMaterial("G4_POLYETHYLENE");
   G4ThreeVector pos6 = G4ThreeVector(0,0,0);
@@ -200,7 +200,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
   //
   G4double CopperBarrel_pRmin = PlasticBarrel_pRmax, CopperBarrel_pRmax = PlasticBarrel_pRmax+12.*cm;
   G4double CopperBarrel_pDz = XeChamber_pDz;
-  G4double CopperBarrel_pSPhi = 0*deg, CopperBarrel_pDPhi = 180*deg;
+  G4double CopperBarrel_pSPhi = 0*deg, CopperBarrel_pDPhi = 240*deg;
 
   G4Material* shielding_mat = nist->FindOrBuildMaterial("G4_Cu");
   G4ThreeVector pos5 = G4ThreeVector(0,0,0);
@@ -232,10 +232,13 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 
   // Make base to put holes into (holes are for pmts)
   G4VSolid * solidfinal;
-  G4Tubs* solidbase = new G4Tubs("CopperBase", 0., base_pRmax, base_pDz, 0., 180.*deg);
+  G4Tubs* solidbase = new G4Tubs("CopperBase", 0., base_pRmax, base_pDz, 0., 360.*deg);
   G4Tubs* solidhole = new G4Tubs("Hole", 0., hole_pRmax, base_pDz*2., 0., 360.*deg);
   solidfinal = solidbase->Clone();
   delete solidbase;
+  G4VisAttributes* CanColor = new G4VisAttributes(G4Colour(1.0,0.8,0,1));
+  CanColor->SetForceSolid(true); // force the object to be visualized with a surface
+  CanColor->SetForceAuxEdgeVisible(true); // force auxiliary edges to be shown
   
   // Loop to make hexagonal rings
   // r is defined as length from center of hexagon to a corner
@@ -253,19 +256,18 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
     // Cans are either all flat or get shorter (if input argv[4] = "y")
     //if (fargc > 3 && strcmp(fargv[5],"y")==0){
     //  // cans shrink in height as you go out in rings     
-    if (ring == 3){
-      can_pDz = 5*cm;
-    }
-    if (ring == 4){
-      can_pDz = 3.5*cm;
-    }
+    //if (ring == 3){
+    //  can_pDz = 5*cm;
+    //}
+    //if (ring == 4){
+    //  can_pDz = 3*cm;
+    //}
     //}
     G4Tubs* solidcan = new G4Tubs("solidcan",0, can_pRmax, can_pDz, 0, 360.*deg);
-    
     double dx=0,dy=0,x=0,y=0; 
     
     // loop over each side of the hexagon, each have diff equations to place cans 
-    for (int side=1;side<4;side++){
+    for (int side=1;side<7;side++){
       
       // starting at corner at y=0, then moving counter clockwise around hexagon
       // with x,y initiated as position of corner
@@ -315,13 +317,14 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 
 	// Place cans ontop of holes
 	// make new can for each position
-	//G4ThreeVector poscan = G4ThreeVector(x, y, -(XeChamber_pDz+base_pDz*2+can_pDz));
-	//G4LogicalVolume* logiccan = new G4LogicalVolume(solidcan, shielding_mat, "logiccan");
-	//new G4PVPlacement(0, poscan, logiccan, "Can", logicEnv, false, 0, true);
+	G4ThreeVector poscan = G4ThreeVector(x, y, -(XeChamber_pDz+base_pDz*2+can_pDz));
+	G4LogicalVolume* logiccan = new G4LogicalVolume(solidcan, shielding_mat, "logiccan");
+	logiccan->SetVisAttributes(CanColor);
+	new G4PVPlacement(0, poscan, logiccan, "Can", logicEnv, false, 0, true);
 	
 	// or union with base to make one solid
-	G4ThreeVector poscan = G4ThreeVector(x, y, -(base_pDz+can_pDz));
-	solidfinal = new G4UnionSolid("solidfinal", solidfinal, solidcan, 0, poscan);
+	//G4ThreeVector poscan = G4ThreeVector(x, y, -(base_pDz+can_pDz));
+	//solidfinal = new G4UnionSolid("solidfinal", solidfinal, solidcan, 0, poscan);
 
 	x += dx;
 	y += dy;
@@ -341,7 +344,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
   // Back endcap
   //
   G4double BackEndcap_pRmin = 0., BackEndcap_pRmax = CopperBarrel_pRmax;
-  G4double BackEndcap_pSPhi = 0*deg, BackEndcap_pDPhi = 180*deg;
+  G4double BackEndcap_pSPhi = 0*deg, BackEndcap_pDPhi = 360*deg;
   G4double BackEndcap_pDz = 6.*cm;
   G4ThreeVector pos4 = G4ThreeVector(0, 0, XeChamber_pDz+BackEndcap_pDz);
      
@@ -369,13 +372,24 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
   ///
   // Set vis attributes like color
   ///
-  logicEnv->SetVisAttributes(G4VisAttributes::Invisible);  
-  G4VisAttributes* tmpVisAtt = new G4VisAttributes(G4Colour(0,0.5,1.));
-  tmpVisAtt->SetForceSolid(true); // force the object to be visualized with a surface
-  tmpVisAtt->SetForceAuxEdgeVisible(true); // force auxiliary edges to be shown
-  logicCopperEndcap->SetVisAttributes(tmpVisAtt);
-  //logicBackEndcap->SetVisAttributes(tmpVisAtt);
-  //logicCopperBarrel->SetVisAttributes(tmpVisAtt);
+  
+  // Make everything else invisible
+  //logicEnv->SetVisAttributes(G4VisAttributes::Invisible);
+
+  // Make colors
+  G4VisAttributes* Blue = new G4VisAttributes(G4Colour(0,0.5,1.,1));
+  G4VisAttributes* Yellow = new G4VisAttributes(G4Colour(1.0,1.0,0,1));
+  G4VisAttributes* Grey = new G4VisAttributes(G4Colour(.5,.5,.5,1));  
+  G4VisAttributes* White = new G4VisAttributes(G4Colour(1.0,1.0,1.0,0));
+
+  
+  // set colors
+  logicEnv->SetVisAttributes(White);
+  logicCopperEndcap->SetVisAttributes(Yellow);
+  logicBackEndcap->SetVisAttributes(Yellow);
+  logicCopperBarrel->SetVisAttributes(Yellow);
+  logicXeChamber->SetVisAttributes(Blue);
+  logicPlasticBarrel->SetVisAttributes(Grey);
   //logiccan->SetVisAttributes(tmpVisAtt);
 
   
